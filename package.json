@@ -3,8 +3,10 @@
   "version": "0.0.0",
   "description": "Beautifully designed components that you can copy and paste into your apps. Accessible. Customizable. Open Source.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "build": "node build.js"
   },
   "keywords": [],
   "author": "",
