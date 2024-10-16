@@ -1,16 +1,5 @@
 import registry from './registry.js'
-
-const REQUIRED_INDEX_PROPERTIES = [
-  'name',
-  'files',
-  'type',
-]
-const OPTIONAL_INDEX_PROPERTIES = [
-  'devDependencies',
-  'dependencies',
-  'registryDependencies',
-]
-const ALLOWED_INDEX_PROPERTIES = REQUIRED_INDEX_PROPERTIES.concat(OPTIONAL_INDEX_PROPERTIES)
+import styles from './styles.js'
 
 test('index file has array of components inside', () => {
   expect(registry).toBeInstanceOf(Array)
@@ -20,8 +9,19 @@ test('index file has array of components inside', () => {
     expect(item).toHaveProperty('files.0')
     const properties = Object.keys(item)
     properties.forEach(prop => {
-      expect(ALLOWED_INDEX_PROPERTIES).toContain(prop)
-      if (OPTIONAL_INDEX_PROPERTIES.includes(prop)) {
+      expect([
+        'name',
+        'files',
+        'type',
+        'dependencies',
+        'devDependencies',
+        'registryDependencies',
+      ]).toContain(prop)
+      if ([
+        'dependencies',
+        'devDependencies',
+        'registryDependencies',
+      ].includes(prop)) {
         expect(item[prop]).toHaveProperty('0')
       }
     })
@@ -30,3 +30,49 @@ test('index file has array of components inside', () => {
   const namesDedup = [...new Set(names)]
   expect(names).toHaveLength(namesDedup.length)
 })
+
+test('styles file has array of styles inside', () => {
+  expect(styles).toBeInstanceOf(Array)
+  styles.forEach(item => {
+    expect(item).toHaveProperty('name')
+    expect(item).toHaveProperty('label')
+    const properties = Object.keys(item)
+    properties.forEach(prop => {
+      expect(['name', 'label']).toContain(prop)
+    })
+  })
+  const names = styles.map(item => item.name)
+  const namesDedup = [...new Set(names)]
+  expect(names).toHaveLength(namesDedup.length)
+})
+
+
+import { stat } from 'node:fs'
+test('all announced components are present', async () => {
+  const compPaths = styles.reduce((acc, style) => {
+    const styledComponents = registry.reduce(
+      (acc, component) => {
+        const styledFiles = component.files.map(
+          file => `./registry/${style.name}/${file}`
+        )
+        return acc.concat(styledFiles)
+      },
+      [],
+    )
+
+    return acc.concat(styledComponents)
+  }, [])
+
+  const proms = compPaths.map(p => {
+    return new Promise((resolve, reject) => {
+      stat(p, (err, stats) => {
+        if (err) reject(err)
+        resolve(stats && !stats.isDirectory())
+      })
+    })
+  })
+
+  const res = await Promise.all(proms)
+  res.every(r => expect(r).toBeTruthy())
+})
+
