@@ -1,8 +1,8 @@
 export default [
   {
-    "name": "test",
+    "name": "componentA",
     "files": [
-      "ui/test.tsx"
+      "ui/componentA.tsx"
     ],
     "type": "components:ui"
   }
