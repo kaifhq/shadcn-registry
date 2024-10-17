@@ -4,6 +4,9 @@ export default [
     "files": [
       "ui/componentA.tsx"
     ],
+    "dependencies": [
+      "react"
+    ],
     "type": "components:ui"
   }
 ]
