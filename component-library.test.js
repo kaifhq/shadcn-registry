@@ -1,5 +1,6 @@
 import registry from './registry.js'
 import styles from './styles.js'
+import colors from './colors.js'
 
 test('index file has array of components inside', () => {
   expect(registry).toBeInstanceOf(Array)
@@ -42,6 +43,21 @@ test('styles file has array of styles inside', () => {
     })
   })
   const names = styles.map(item => item.name)
+  const namesDedup = [...new Set(names)]
+  expect(names).toHaveLength(namesDedup.length)
+})
+
+test('colors file has array of colors inside', () => {
+  expect(colors).toBeInstanceOf(Array)
+  colors.forEach(item => {
+    expect(item).toHaveProperty('name')
+    expect(item).toHaveProperty('label')
+    const properties = Object.keys(item)
+    properties.forEach(prop => {
+      expect(['name', 'label']).toContain(prop)
+    })
+  })
+  const names = colors.map(item => item.name)
   const namesDedup = [...new Set(names)]
   expect(names).toHaveLength(namesDedup.length)
 })

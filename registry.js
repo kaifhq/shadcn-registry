@@ -7,6 +7,6 @@ export default [
     "dependencies": [
       "react"
     ],
-    "type": "components:ui"
+    "type": "registry:ui"
   }
 ]
