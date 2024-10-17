@@ -1,9 +1,15 @@
 import { readFile } from 'node:fs'
-import { writeFile } from 'node:fs/promises'
+import {
+  writeFile,
+  rename,
+  mkdir,
+  rm,
+  stat,
+} from 'node:fs/promises'
 import registry from './registry.js'
 import styles from './styles.js'
 
-const OUTDIR = 'dist'
+const OUTDIR = './dist'
 
 const processComponent = async (component, style) => {
   const files = await Promise.all(
@@ -25,7 +31,7 @@ const processComponent = async (component, style) => {
   }, null, "  ")
 
   await writeFile(
-    `./${OUTDIR}/styles/${style.name}/${component.name}.json`,
+    `${OUTDIR}/styles/${style.name}/${component.name}.json`,
     content,
   )
 }
@@ -46,7 +52,7 @@ const makeStyles = async () => {
     styles, null, "  ",
   )
   await writeFile(
-    `./${OUTDIR}/styles/index.json`,
+    `${OUTDIR}/styles/index.json`,
     content,
   )
 }
@@ -56,16 +62,42 @@ const makeIndex = async () => {
     registry, null, "  ",
   )
   await writeFile(
-    `./${OUTDIR}/index.json`,
+    `${OUTDIR}/index.json`,
     content,
   )
 }
 
 const start = async () => {
-  await Promise.all([
-    makeIndex(),
-    makeStyles(),
-  ].concat(makeComponentJSONs()))
+  let isDirPresent = false
+  try {
+    const outputStats = await stat(OUTDIR)
+    isDirPresent = outputStats.isDirectory()
+  } catch(e) {}
+  if (isDirPresent) {
+    await rename(OUTDIR, `${OUTDIR}.backup`)
+  }
+  await mkdir(OUTDIR, { recursive: true })
+  await mkdir(`${OUTDIR}/styles`, { recursive: true })
+  await Promise.all(
+    styles.map(({name, label}) =>
+      mkdir(`${OUTDIR}/styles/${name}`, { recursive: true })
+    )
+  )
+  try {
+    await Promise.all([
+      makeIndex(),
+      makeStyles(),
+    ].concat(makeComponentJSONs()))
+    if (isDirPresent) {
+      await rm(`${OUTDIR}.backup`, {recursive: true})
+    }
+  } catch(e) {
+    console.err(e)
+    await rm(OUTDIR, {recursive: true})
+    if (isDirPresent) {
+      await rename(`${OUTDIR}.backup`, OUTDIR)
+    }
+  }
 }
 
 start()
