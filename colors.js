@@ -3,7 +3,6 @@ export default [
     name: "neutral",
     label: "Neutral",
   },
-  /*
   {
     name: "gray",
     label: "Gray",
@@ -20,5 +19,4 @@ export default [
     name: "slate",
     label: "Slate",
   },
-  */
 ]
